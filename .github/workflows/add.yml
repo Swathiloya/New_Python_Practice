@@ -1,0 +1,87 @@
+name: Arithmetic Operations
+
+on:
+  workflow_dispatch:
+    inputs:
+      num1:
+        description: "First number"
+        required: true
+        default: "10"
+      num2:
+        description: "Second number"
+        required: true
+        default: "5"
+      operations:
+        description: "Select operations (comma-separated: add, subtract, multiply, divide)"
+        required: true
+        default: "add"
+
+jobs:
+  determine-operations:
+    runs-on: ubuntu-latest
+    outputs:
+      add: ${{ contains(github.event.inputs.operations, 'add') }}
+      subtract: ${{ contains(github.event.inputs.operations, 'subtract') }}
+      multiply: ${{ contains(github.event.inputs.operations, 'multiply') }}
+      divide: ${{ contains(github.event.inputs.operations, 'divide') }}
+    steps:
+      - name: Determine Selected Operations
+        id: set-operations
+        run: |
+          echo "add=${{ contains(github.event.inputs.operations, 'add') }}" >> $GITHUB_OUTPUT
+          echo "subtract=${{ contains(github.event.inputs.operations, 'subtract') }}" >> $GITHUB_OUTPUT
+          echo "multiply=${{ contains(github.event.inputs.operations, 'multiply') }}" >> $GITHUB_OUTPUT
+          echo "divide=${{ contains(github.event.inputs.operations, 'divide') }}" >> $GITHUB_OUTPUT
+
+  addition:
+    needs: determine-operations
+    if: needs.determine-operations.outputs.add == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform Addition
+        run: |
+          num1=${{ github.event.inputs.num1 }}
+          num2=${{ github.event.inputs.num2 }}
+          sum=$((num1 + num2))
+          echo "Sum: $sum"
+
+  subtraction:
+    needs: determine-operations
+    if: needs.determine-operations.outputs.subtract == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform Subtraction
+        run: |
+          num1=${{ github.event.inputs.num1 }}
+          num2=${{ github.event.inputs.num2 }}
+          difference=$((num1 - num2))
+          echo "Difference: $difference"
+
+  multiplication:
+    needs: determine-operations
+    if: needs.determine-operations.outputs.multiply == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform Multiplication
+        run: |
+          num1=${{ github.event.inputs.num1 }}
+          num2=${{ github.event.inputs.num2 }}
+          product=$((num1 * num2))
+          echo "Product: $product"
+
+  division:
+    needs: determine-operations
+    if: needs.determine-operations.outputs.divide == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform Division
+        run: |
+          num1=${{ github.event.inputs.num1 }}
+          num2=${{ github.event.inputs.num2 }}
+          if [ "$num2" -ne 0 ]; then
+            quotient=$((num1 / num2))
+            echo "Quotient: $quotient"
+          else
+            echo "Division by zero is not allowed"
+            exit 1
+          fi
